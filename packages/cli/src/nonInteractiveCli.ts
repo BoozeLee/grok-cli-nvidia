@@ -41,11 +41,14 @@ export async function runNonInteractive(
     const providerConfig: any = {};
     
     // Map config properties to provider config based on provider type
-    if (providerName === 'xai') {
+    if (providerName === 'xai' || providerName === 'grok') {
       providerConfig.apiKey = process.env.XAI_API_KEY || '';
     } else if (providerName === 'ollama') {
       providerConfig.endpoint = process.env.GROKCLI_OLLAMA_ENDPOINT || process.env.OLLAMA_HOST || 'http://localhost:11434';
       providerConfig.model = process.env.GROKCLI_OLLAMA_MODEL || 'llama3.2:latest';
+    } else if (providerName === 'custom') {
+      providerConfig.apiKey = process.env.CUSTOM_API_KEY || '';
+      providerConfig.endpoint = process.env.CUSTOM_BASE_URL || 'http://localhost:8080/v1';
     }
     
     const queryOptions: any = {};
@@ -59,8 +62,13 @@ export async function runNonInteractive(
     
     console.log(`🔧 Tools available for ${providerName}: ${tools.length}`);
     
-    // Use tool-enabled query
-    const response: ToolCallResponse = await provider.queryWithTools(input, tools, queryOptions);
+    // Check if provider supports tools
+    const supportsTools = provider.supportsToolCalling && provider.supportsToolCalling();
+    
+    // Use tool-enabled query only if provider supports it
+    const response: any = supportsTools && tools.length > 0
+      ? await provider.queryWithTools(input, tools, queryOptions)
+      : await provider.query(input, queryOptions);
     
     // Handle tool calls if present
     if (response.tool_calls && response.tool_calls.length > 0) {
@@ -101,7 +109,9 @@ export async function runNonInteractive(
       process.stdout.write('\n');
     } else {
       // No tool calls, just output the response
-      process.stdout.write(response.content || '');
+      // query() returns string directly for OpenAI-compatible providers
+      const content = typeof response === 'string' ? response : (response.content || '');
+      process.stdout.write(content);
       process.stdout.write('\n');
     }
 

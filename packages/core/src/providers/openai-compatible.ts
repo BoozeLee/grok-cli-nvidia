@@ -77,6 +77,10 @@ export class OpenAICompatibleCoreProvider extends Provider {
     }
     throw new Error(`Unexpected response format from ${this.displayName} API`);
   }
+
+  supportsToolCalling(): boolean {
+    return false;
+  }
 }
 
 export function createOpenAICoreProvider(config: ProviderConfig = {}): Provider {
