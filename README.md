@@ -56,6 +56,31 @@ export GROKCLI_PROVIDER=ollama
 grok
 ```
 
+### Using NVIDIA NIM (Custom Provider)
+
+NVIDIA NIM provides OpenAI-compatible endpoints for running models on NVIDIA hardware or via NVIDIA's cloud API.
+
+```bash
+# Set NVIDIA NIM credentials
+export GROKCLI_PROVIDER=custom
+export CUSTOM_API_KEY="your_nvapi_key"
+export CUSTOM_BASE_URL="https://integrate.api.nvidia.com/v1"
+export CUSTOM_MODEL="nvidia/llama-3.1-8b-instruct"  # or your preferred model
+
+# Run grok-cli
+grok
+```
+
+Or in non-interactive mode:
+
+```bash
+export CUSTOM_API_KEY="nvapi-your-key"
+export CUSTOM_BASE_URL="https://integrate.api.nvidia.com/v1"
+echo "Explain quantum physics" | grok --provider custom
+```
+
+**Note:** The custom provider does not support tool calling (returns `false` for `supportsToolCalling()`). This prevents timeouts with NVIDIA NIM's streaming implementation.
+
 Grok CLI auto-detects your provider based on which API key is set. To explicitly choose a provider, set `GROKCLI_PROVIDER`:
 
 ```bash
