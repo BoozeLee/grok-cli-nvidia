@@ -280,13 +280,20 @@ async function validateNonInterActiveAuth(
     if (process.env.DEBUG === '1' || process.env.DEBUG === 'true') {
       console.debug(`DEBUG: Ollama provider, hasApiKey: ${hasApiKey}`);
     }
+  } else if (provider === 'custom') {
+    // Custom provider uses CUSTOM_API_KEY
+    hasApiKey = !!(process.env.CUSTOM_API_KEY);
+    if (process.env.DEBUG === '1' || process.env.DEBUG === 'true') {
+      console.debug(`DEBUG: ${provider} provider, hasApiKey: ${hasApiKey}`);
+    }
   }
 
   // Validate API keys for supported providers
   if (!hasApiKey && provider !== 'ollama') {
     const providerName = provider === 'grok' ? 'XAI' : provider.toUpperCase();
+    const envVar = provider === 'custom' ? 'CUSTOM_API_KEY' : 'XAI_API_KEY';
     console.error(
-      `${providerName}: Provider not configured. Set XAI_API_KEY environment variable`,
+      `${providerName}: Provider not configured. Set ${envVar} environment variable`,
     );
     process.exit(1);
   }
